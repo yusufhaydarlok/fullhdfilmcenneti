@@ -40,35 +40,41 @@ namespace fullhdfilmcenneti_service.Services
             {
                 return CustomResponseDto<R>.Fail(404, $"{typeof(T).ToString().Split(".").Last()} is already exist!");
             }
-            var response = await _repository.AddAsync(entity);
-            if (response == 0) return CustomResponseDto<R>.Fail(404,ErrorMessages.SOMETHING_WENT_WRONG);
+            
+            await _repository.AddAsync(entity);
+            await _unitOfWork.CommitAsync();
 
             var entityDTO = _mapper.Map<R>(entity);
-            return CustomResponseDto<R>.Success(entityDTO);
+            return CustomResponseDto<R>.Success(200 ,entityDTO);
         }
 
         public async Task<CustomResponseDto<IEnumerable<R>>> AddRangeAsync(IEnumerable<T> entities)
         {
             await _repository.AddRangeAsync(entities);
             await _unitOfWork.CommitAsync();
-            return entities;
+            var entityDTO = _mapper.Map<IEnumerable<R>>(entities);
+            return CustomResponseDto<IEnumerable<R>>.Success(200, entityDTO);
         }
 
         public async Task<CustomResponseDto<bool>> AnyAsync(Expression<Func<T, bool>> expression)
         {
-            return await _repository.AnyAsync(expression);
+            var response = await _repository.AnyAsync(expression);
+            var result = _mapper.Map<bool>(response);
+            return CustomResponseDto<bool>.Success(200, result);
         }
 
         public async Task<CustomResponseDto<IEnumerable<R>>> FindAsync(Expression<Func<T, bool>> expression)
         {
-            return await _repository.FindAsync(expression);
+            var response = await _repository.FindAsync(expression);
+            var result = _mapper.Map<IEnumerable<R>>(response);
+            return CustomResponseDto<IEnumerable<R>>.Success(200, result);
         }
 
         public async Task<CustomResponseDto<IEnumerable<R>>> GetAllAsync()
         {
             var response = await _repository.GetAll().ToListAsync();
             var result = _mapper.Map<IEnumerable<R>>(response);
-            return result;
+            return CustomResponseDto<IEnumerable<R>>.Success(200, result);
         }
 
         public async Task<CustomResponseDto<R>> GetByIdAsync(Guid id)
@@ -79,7 +85,7 @@ namespace fullhdfilmcenneti_service.Services
                 throw new NotFoundExcepiton($"{typeof(T).Name}({id}) not found");
             }
             var result = _mapper.Map<R>(hasUser);
-            return result;
+            return CustomResponseDto<R>.Success(200, result);
         }
 
         public async Task RemoveAsync(T entity)
@@ -103,8 +109,8 @@ namespace fullhdfilmcenneti_service.Services
         public IQueryable<CustomResponseDto<R>> Where(Expression<Func<T, bool>> expression)
         {
             var where = _repository.Where(expression);
-            var result = _mapper.Map<R>(where);
-            return result;
+            var result = _mapper.Map<R>(where.ToList());
+            return (IQueryable<CustomResponseDto<R>>)CustomResponseDto<R>.Success(200, result);
         }
     }
 }

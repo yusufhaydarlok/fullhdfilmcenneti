@@ -4,6 +4,7 @@ using fullhdfilmcenneti_core.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using fullhdfilmcenneti_core.Services;
 
 namespace fullhdfilmcenneti_api.Controllers
 {
@@ -18,7 +19,7 @@ namespace fullhdfilmcenneti_api.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet, Authorize(Roles = "Admin")]
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var roles = await _roleService.GetAllAsync();
@@ -26,7 +27,7 @@ namespace fullhdfilmcenneti_api.Controllers
             return CreateActionResult(CustomResponseDto<List<RoleDto>>.Success(200, rolesDto));
         }
 
-        [HttpGet("[action]/{roleId}"), Authorize(Roles = "Admin")]
+        [HttpGet("[action]/{roleId}")]
         public async Task<IActionResult> GetSingleRoleByIdWithUsersAsync(Guid roleId)
         {
             return CreateActionResult(await _roleService.GetSingleRoleByIdWithUsersAsync(roleId));

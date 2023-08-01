@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using fullhdfilmcenneti_core.DTOs.UserDTOs;
+using fullhdfilmcenneti_core.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,14 +22,14 @@ namespace fullhdfilmcenneti_api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(CreateUserDto request)
         {
-            var result = _authService.Register(request);
+            var result = await _authService.Register(request);
             return CreateActionResult(result);
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
-            var result = _authService.Login(request);
+            var result = await _authService.Login(request);
             return CreateActionResult(result);
         }
 

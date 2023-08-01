@@ -6,6 +6,7 @@ using fullhdfilmcenneti_core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using fullhdfilmcenneti_core.Services;
 
 namespace fullhdfilmcenneti_api.Controllers
 {
@@ -30,8 +31,7 @@ namespace fullhdfilmcenneti_api.Controllers
         public async Task<IActionResult> All()
         {
             var users = await _userService.GetAllAsync();
-            var usersDto = _mapper.Map<List<UserDto>>(users.ToList());
-            return CreateActionResult(CustomResponseDto<List<UserDto>>.Success(200, usersDto));
+            return CreateActionResult(CustomResponseDto<List<UserDto>>.Success(200, users));
         }
 
         [ServiceFilter(typeof(NotFoundFilter<User>))]
@@ -39,15 +39,13 @@ namespace fullhdfilmcenneti_api.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             var user = await _userService.GetByIdAsync(id);
-            var usersDto = _mapper.Map<UserDto>(user);
-            return CreateActionResult(CustomResponseDto<UserDto>.Success(200, usersDto));
+            return CreateActionResult(CustomResponseDto<UserDto>.Success(200, user));
         }
 
         [HttpPost]
         public async Task<IActionResult> Save(CreateUserDto userDto)
         {
-            var user = await _userService.AddAsync(_mapper.Map<User>(userDto));
-            var usersDto = _mapper.Map<CreateUserDto>(user);
+            var user = await _userService.AddAsync(userDto);
             return CreateActionResult(CustomResponseDto<CreateUserDto>.Success(201, usersDto));
         }
 
@@ -61,8 +59,7 @@ namespace fullhdfilmcenneti_api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Remove(Guid id)
         {
-            var user = await _userService.GetByIdAsync(id);
-            await _userService.RemoveAsync(user);
+            await _userService.RemoveAsync(id);
             return CreateActionResult(CustomResponseDto<NoContentDto>.Success(204));
         }
     }

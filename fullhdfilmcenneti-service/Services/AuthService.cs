@@ -14,6 +14,8 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using fullhdfilmcenneti_core.Repositories;
+using fullhdfilmcenneti_repository.Repositories;
 
 namespace fullhdfilmcenneti_service.Services
 {
@@ -23,13 +25,15 @@ namespace fullhdfilmcenneti_service.Services
         private readonly IAuthService _authService;
         private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
+        private readonly IGenericRepository<User> _repository;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthService(IMapper mapper, IAuthService authService, IUserService userService, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public AuthService(IMapper mapper, IGenericRepository<User> repository,IAuthService authService, IUserService userService, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _mapper = mapper;
-            _authService = authService;
+            _repository = repository;
             _userService = userService;
+            _authService = authService;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
         }
@@ -48,12 +52,11 @@ namespace fullhdfilmcenneti_service.Services
 
         public async Task<CustomResponseDto<UserDto>> Login(UserDto request)
         {
-            var user = (await _userService.FindAsync(x => x.Username == request.Username)).FirstOrDefalut();
-            var users = await _userService.GetAllAsync();
+            var user = (await _repository.FindAsync(x => x.Username == request.Username)).FirstOrDefault();
+            var users = _repository.GetAll();
             var usersDto = _mapper.Map<List<UserDto>>(users.ToList());
             if (!usersDto.Any(x => x.Username == request.Username))
             {
-
                 return CustomResponseDto<UserDto>.Fail(404 ,"User not found.");
             }
 
@@ -64,15 +67,19 @@ namespace fullhdfilmcenneti_service.Services
 
             var token = CreateToken(user);
             var refreshToken = GenerateRefreshToken();
-            SetRefreshToken(refreshToken);
-            return CustomResponseDto<UserDto>.Success(200, token);
+            HttpResponse httpResponse = null;
+            SetRefreshToken(refreshToken, httpResponse);
+            return CustomResponseDto<UserDto>.Success(200,_mapper.Map<UserDto>(token));
         }
 
         public async Task<CustomResponseDto<string>> RefreshToken(string request)
         {
+            HttpRequest httpRequest = null;
+            HttpResponse httpResponse = null;
+
             var userId = _authService.GetMyId();
-            var user = (await _userService.FindAsync(x => x.Id.ToString() == userId)).FirstOrDefault();
-            var refreshToken = Request.Cookies["refreshToken"];
+            var user = (await _repository.FindAsync(x => x.Id.ToString() == userId)).FirstOrDefault();
+            var refreshToken = httpRequest.Cookies["refreshToken"];
 
             if (!user.RefreshToken.Equals(refreshToken))
             {
@@ -86,8 +93,8 @@ namespace fullhdfilmcenneti_service.Services
 
             string token = CreateToken(user);
             var newRefreshToken = GenerateRefreshToken();
-            SetRefreshToken(newRefreshToken);
-            return Ok(token);
+            SetRefreshToken(newRefreshToken, httpResponse);
+            return CustomResponseDto<string>.Success(200, token);
         }
 
         public async Task<CustomResponseDto<CreateUserDto>> Register(CreateUserDto request)
@@ -137,18 +144,18 @@ namespace fullhdfilmcenneti_service.Services
             return refreshToken;
         }
 
-        private async Task SetRefreshToken(RefreshToken newRefreshToken)
+        private async Task SetRefreshToken(RefreshToken newRefreshToken, HttpResponse httpResponse)
         {
             var userId = _authService.GetMyId();
-            var user = await _userService.GetByIdAsync(Guid.Parse(userId));
+            var user = await _repository.GetByIdAsync(Guid.Parse(userId));
 
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
                 Expires = newRefreshToken.Expires
             };
-
-            Response.Cookies.Append("refreshToken", newRefreshToken.Token, cookieOptions);
+            
+            httpResponse.Cookies.Append("refreshToken", newRefreshToken.Token, cookieOptions);
 
             user.RefreshToken = newRefreshToken.Token;
             user.TokenCreated = newRefreshToken.Created;

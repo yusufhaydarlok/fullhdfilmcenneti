@@ -6,6 +6,10 @@ using fullhdfilmcenneti_repository.UnitOfWorks;
 using System.Reflection;
 using System;
 using Module = Autofac.Module;
+using fullhdfilmcenneti_core.Services;
+using fullhdfilmcenneti_service.Services;
+using fullhdfilmcenneti_repository;
+using fullhdfilmcenneti_service.Mapping;
 
 namespace fullhdfilmcenneti_api.Modules
 {

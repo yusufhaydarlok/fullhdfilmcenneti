@@ -10,6 +10,12 @@ using Serilog;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using System;
+using FluentValidation.AspNetCore;
+using fullhdfilmcenneti_service.Validations.UserDtoValidations;
+using fullhdfilmcenneti_service.Mapping;
+using fullhdfilmcenneti_api.Modules;
+using fullhdfilmcenneti_repository;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,13 +64,11 @@ builder.Services.AddDbContext<AppDbContext>(x =>
 });
 #endregion
 
-#region FluentValidation
+#region Fluent Validation
 builder.Services.AddControllers(options => options.Filters.Add(new ValidateFilterAttribute())).AddFluentValidation(x =>
 {
     x.RegisterValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
     x.RegisterValidatorsFromAssemblyContaining<UpdateUserDtoValidator>();
-    x.RegisterValidatorsFromAssemblyContaining<CreateRoleDtoValidator>();
-    x.RegisterValidatorsFromAssemblyContaining<UpdateRoleDtoValidator>();
 });
 #endregion
 

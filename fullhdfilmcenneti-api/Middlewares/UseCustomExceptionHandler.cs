@@ -1,4 +1,5 @@
 ﻿using fullhdfilmcenneti_core.DTOs;
+using fullhdfilmcenneti_service.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using System.Text.Json;
 

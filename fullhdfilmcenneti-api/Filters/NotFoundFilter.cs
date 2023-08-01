@@ -2,16 +2,18 @@
 using Microsoft.AspNetCore.Mvc;
 using fullhdfilmcenneti_core.Models;
 using fullhdfilmcenneti_core.DTOs;
+using fullhdfilmcenneti_core.Services;
+using fullhdfilmcenneti_core.Repositories;
 
 namespace fullhdfilmcenneti_api.Filters
 {
     public class NotFoundFilter<T> : IAsyncActionFilter where T : BaseEntity
     {
-        private readonly IService<T> _service;
+        private readonly IGenericRepository<T> _repository;
 
-        public NotFoundFilter(IService<T> service)
+        public NotFoundFilter(IGenericRepository<T> repository)
         {
-            _service = service;
+            _repository = repository;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -25,7 +27,7 @@ namespace fullhdfilmcenneti_api.Filters
             }
 
             var id = (Guid)idValue;
-            var anyEntity = await _service.AnyAsync(x => x.Id == id);
+            var anyEntity = await _repository.AnyAsync(x => x.Id == id);
 
             if (anyEntity)
             {

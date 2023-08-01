@@ -4,7 +4,7 @@ using fullhdfilmcenneti_core.DTOs;
 
 namespace fullhdfilmcenneti_api.Filters
 {
-    public class ValidateFilterAttribute
+    public class ValidateFilterAttribute : ActionFilterAttribute
     {
         public override void OnActionExecuting(ActionExecutingContext context)
         {
