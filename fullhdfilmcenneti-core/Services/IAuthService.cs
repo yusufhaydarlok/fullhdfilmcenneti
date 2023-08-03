@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 
 namespace fullhdfilmcenneti_core.Services
 {
@@ -14,6 +13,5 @@ namespace fullhdfilmcenneti_core.Services
         Task<CustomResponseDto<UserDto>> Login(UserDto request);
         Task<CustomResponseDto<CreateUserDto>> Register(CreateUserDto request);
         Task<CustomResponseDto<string>> RefreshToken(string request);
-        string GetMyId();
     }
 }

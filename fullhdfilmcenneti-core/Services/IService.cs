@@ -13,13 +13,8 @@ namespace fullhdfilmcenneti_core.Services
     {
         Task<CustomResponseDto<R>> GetByIdAsync(Guid id);
         Task<CustomResponseDto<IEnumerable<R>>> GetAllAsync();
-        IQueryable<CustomResponseDto<R>> Where(Expression<Func<T, bool>> expression);
-        Task<CustomResponseDto<bool>> AnyAsync(Expression<Func<T, bool>> expression);
-        Task<CustomResponseDto<R>> AddAsync(T entity);
-        Task<CustomResponseDto<IEnumerable<R>>> AddRangeAsync(IEnumerable<T> entities);
-        Task<CustomResponseDto<IEnumerable<R>>> FindAsync(Expression<Func<T, bool>> expression);
-        Task UpdateAsync(T entity);
-        Task RemoveAsync(T entity);
-        Task RemoveRangeAsync(IEnumerable<T> entities);
+        Task<CustomResponseDto<R>> CreateAsync(T entity);
+        Task<CustomResponseDto<R>> UpdateAsync(T entity);
+        Task<CustomResponseDto<bool>> RemoveAsync(T entity);
     }
 }

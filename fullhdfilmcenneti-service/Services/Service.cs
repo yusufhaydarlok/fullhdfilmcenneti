@@ -28,55 +28,6 @@ namespace fullhdfilmcenneti_service.Services
             _repository = repository;
             _unitOfWork = unitOfWork;
         }
-
-        public async Task<CustomResponseDto<R>> AddAsync(T entity)
-        {
-            if (entity.Id == Guid.Empty)
-            {
-                entity.Id = Guid.NewGuid();
-            }
-            var entry = await _repository.FindAsync(x => !x.IsDeleted && x.Id == entity.Id);
-            if (entry != null)
-            {
-                return CustomResponseDto<R>.Fail(404, $"{typeof(T).ToString().Split(".").Last()} is already exist!");
-            }
-            
-            await _repository.AddAsync(entity);
-            await _unitOfWork.CommitAsync();
-
-            var entityDTO = _mapper.Map<R>(entity);
-            return CustomResponseDto<R>.Success(200 ,entityDTO);
-        }
-
-        public async Task<CustomResponseDto<IEnumerable<R>>> AddRangeAsync(IEnumerable<T> entities)
-        {
-            await _repository.AddRangeAsync(entities);
-            await _unitOfWork.CommitAsync();
-            var entityDTO = _mapper.Map<IEnumerable<R>>(entities);
-            return CustomResponseDto<IEnumerable<R>>.Success(200, entityDTO);
-        }
-
-        public async Task<CustomResponseDto<bool>> AnyAsync(Expression<Func<T, bool>> expression)
-        {
-            var response = await _repository.AnyAsync(expression);
-            var result = _mapper.Map<bool>(response);
-            return CustomResponseDto<bool>.Success(200, result);
-        }
-
-        public async Task<CustomResponseDto<IEnumerable<R>>> FindAsync(Expression<Func<T, bool>> expression)
-        {
-            var response = await _repository.FindAsync(expression);
-            var result = _mapper.Map<IEnumerable<R>>(response);
-            return CustomResponseDto<IEnumerable<R>>.Success(200, result);
-        }
-
-        public async Task<CustomResponseDto<IEnumerable<R>>> GetAllAsync()
-        {
-            var response = await _repository.GetAll().ToListAsync();
-            var result = _mapper.Map<IEnumerable<R>>(response);
-            return CustomResponseDto<IEnumerable<R>>.Success(200, result);
-        }
-
         public async Task<CustomResponseDto<R>> GetByIdAsync(Guid id)
         {
             var hasUser = await _repository.GetByIdAsync(id);
@@ -88,29 +39,49 @@ namespace fullhdfilmcenneti_service.Services
             return CustomResponseDto<R>.Success(200, result);
         }
 
-        public async Task RemoveAsync(T entity)
+        public async Task<CustomResponseDto<IEnumerable<R>>> GetAllAsync()
         {
-            _repository.Remove(entity);
-            await _unitOfWork.CommitAsync();
+            var response = await _repository.GetAll().ToListAsync();
+            var result = _mapper.Map<IEnumerable<R>>(response);
+            return CustomResponseDto<IEnumerable<R>>.Success(200, result);
         }
 
-        public async Task RemoveRangeAsync(IEnumerable<T> entities)
+        public async Task<CustomResponseDto<R>> CreateAsync(T entity)
         {
-            _repository.RemoveRange(entities);
+            var entry = await _repository.FindAsync(x => !x.IsDeleted && x.Id == entity.Id);
+            if (entry != null)
+            {
+                return CustomResponseDto<R>.Fail(400, $"{typeof(T).ToString().Split(".").Last()} is already exist!");
+            }
+            await _repository.AddAsync(entity);
             await _unitOfWork.CommitAsync();
+            var entityDTO = _mapper.Map<R>(entity);
+            return CustomResponseDto<R>.Success(200 ,entityDTO);
         }
 
-        public async Task UpdateAsync(T entity)
+        public async Task<CustomResponseDto<R>> UpdateAsync(T entity)
         {
+            var entry = await _repository.FindAsync(x => !x.IsDeleted && x.Id == entity.Id);
+            if (entry.Count() <= 0)
+            {
+                return CustomResponseDto<R>.Fail(400, $"{typeof(T).ToString().Split(".").Last()} is not found!");
+            }
             _repository.Update(entity);
             await _unitOfWork.CommitAsync();
+            var updated = _mapper.Map<R>(entity);
+            return CustomResponseDto<R>.Success(200 ,updated);
         }
 
-        public IQueryable<CustomResponseDto<R>> Where(Expression<Func<T, bool>> expression)
+        public async Task<CustomResponseDto<bool>> RemoveAsync(T entity)
         {
-            var where = _repository.Where(expression);
-            var result = _mapper.Map<R>(where.ToList());
-            return (IQueryable<CustomResponseDto<R>>)CustomResponseDto<R>.Success(200, result);
+            var entry = await _repository.FindAsync(x => !x.IsDeleted && x.Id == entity.Id);
+            if (entry.Count() <= 0)
+            {
+                return CustomResponseDto<bool>.Fail(400, $"{typeof(T).ToString().Split(".").Last()} is not found!");
+            }
+            _repository.SoftRemoveAsync(entry.First());
+            await _unitOfWork.CommitAsync();
+            return CustomResponseDto<bool>.Success(200, true);
         }
     }
 }

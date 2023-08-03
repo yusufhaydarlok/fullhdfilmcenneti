@@ -23,8 +23,7 @@ namespace fullhdfilmcenneti_api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var roles = await _roleService.GetAllAsync();
-            var rolesDto = _mapper.Map<List<RoleDto>>(roles.ToList());
-            return CreateActionResult(CustomResponseDto<List<RoleDto>>.Success(200, rolesDto));
+            return CreateActionResult(CustomResponseDto<List<RoleDto>>.Success(200, roles));
         }
 
         [HttpGet("[action]/{roleId}")]

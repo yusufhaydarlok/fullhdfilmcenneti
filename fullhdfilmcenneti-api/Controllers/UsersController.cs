@@ -45,8 +45,8 @@ namespace fullhdfilmcenneti_api.Controllers
         [HttpPost]
         public async Task<IActionResult> Save(CreateUserDto userDto)
         {
-            var user = await _userService.AddAsync(userDto);
-            return CreateActionResult(CustomResponseDto<CreateUserDto>.Success(201, usersDto));
+            var user = await _userService.CreateAsync(userDto);
+            return CreateActionResult(CustomResponseDto<CreateUserDto>.Success(201, user));
         }
 
         [HttpPut]

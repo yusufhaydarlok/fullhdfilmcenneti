@@ -21,26 +21,6 @@ namespace fullhdfilmcenneti_repository.Repositories
             _dbSet = _context.Set<T>();
         }
 
-        public async Task AddAsync(T entity)
-        {
-            await _dbSet.AddAsync(entity);
-        }
-
-        public async Task AddRangeAsync(IEnumerable<T> entities)
-        {
-            await _dbSet.AddRangeAsync(entities);
-        }
-
-        public async Task<bool> AnyAsync(Expression<Func<T, bool>> expression)
-        {
-            return await _dbSet.AnyAsync(expression);
-        }
-
-        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression)
-        {
-            return await _dbSet.Where(expression).ToListAsync();
-        }
-
         public IQueryable<T> GetAll()
         {
             return _dbSet.AsNoTracking().AsQueryable();
@@ -51,19 +31,38 @@ namespace fullhdfilmcenneti_repository.Repositories
             return await _dbSet.FindAsync(id);
         }
 
-        public void Remove(T entity)
+        public async Task AddAsync(T entity)
         {
-            _dbSet.Remove(entity);
-        }
-
-        public void RemoveRange(IEnumerable<T> entities)
-        {
-            _dbSet.RemoveRange(entities);
+            await _dbSet.AddAsync(entity);
         }
 
         public void Update(T entity)
         {
             _dbSet.Update(entity);
+        }
+
+        public void Remove(T entity)
+        {
+            _dbSet.Remove(entity);
+        }
+
+        public async void SoftRemoveAsync(T entity)
+        {
+            var checkedEntity = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id);
+            if (checkedEntity != null)
+            {
+                checkedEntity.IsDeleted = true;
+            }
+        }
+
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> expression)
+        {
+            return await _dbSet.AnyAsync(expression);
+        }
+
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> expression)
+        {
+            return await _dbSet.Where(expression).ToListAsync();
         }
 
         public IQueryable<T> Where(Expression<Func<T, bool>> expression)
